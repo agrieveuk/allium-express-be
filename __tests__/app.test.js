@@ -56,5 +56,25 @@ describe("/api", () => {
         });
       });
     });
+    describe("PATCH /:article", () => {
+      it("200: increments vote count in specified article by amount provided in request body, and responds with the updated article", async () => {
+        const { body } = await request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: 4 })
+          .expect(200);
+
+        const { rows } = await db.query(
+          `SELECT votes FROM articles WHERE article_id = 3`
+        );
+        expect(rows[0].votes).toBe(4);
+        expect(body.article).toMatchObject({
+          title: "Eight pug gifs that remind me of mitch",
+          topic: "mitch",
+          author: "icellusedkars",
+          body: "some gifs",
+          votes: 4,
+        });
+      });
+    });
   });
 });

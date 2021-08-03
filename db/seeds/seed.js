@@ -15,7 +15,7 @@ const seed = async (data) => {
     db.query(`DROP TABLE IF EXISTS users;`),
     db.query(`DROP TABLE IF EXISTS topics;`),
   ]);
-  console.log("Dropped all tables");
+  // console.log("Dropped all tables");
 
   await Promise.all([
     db.query(`CREATE TABLE topics (
@@ -47,7 +47,7 @@ const seed = async (data) => {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     body TEXT
   );`);
-  console.log("created tables!");
+  // console.log("created tables!");
 
   const topicInsertQuery = format(
     `INSERT INTO topics

@@ -21,3 +21,15 @@ exports.selectArticles = async () => {
   );
   return rows;
 };
+
+exports.updateArticleVotes = async (inc_votes, article_id) => {
+  const { rows } = await db.query(
+    `UPDATE articles
+    SET votes = $1
+    WHERE article_id = $2
+    RETURNING *;`,
+    [inc_votes, article_id]
+  );
+
+  return rows[0];
+};
