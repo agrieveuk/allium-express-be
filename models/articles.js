@@ -12,13 +12,45 @@ exports.selectArticleById = async (article_id) => {
   return rows[0];
 };
 
-exports.selectArticles = async () => {
-  const { rows } = await db.query(
-    `SELECT articles.*, count(comments) AS comment_count FROM articles
+exports.selectArticles = async ({
+  sort_by = "created_at",
+  order = "DESC",
+  topic,
+}) => {
+  const validColumns = [
+    "article_id",
+    "title",
+    "body",
+    "votes",
+    "topic",
+    "author",
+    "created_at",
+  ];
+
+  let selectArticlesQuery = `
+    SELECT articles.*, count(comments) AS comment_count FROM articles
     LEFT JOIN comments
-    ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id;`
-  );
+    ON articles.article_id = comments.article_id`;
+
+  if (!validColumns.includes(sort_by) || !["ASC", "DESC"].includes(order)) {
+    return Promise.reject({ status: 400, msg: "Bad Request" });
+  }
+
+  if (topic) {
+    if (["mitch", "cats", "paper"].includes(topic)) {
+      selectArticlesQuery += ` WHERE topic = '${topic}'`;
+    } else {
+      return Promise.reject({ status: 400, msg: "Bad Request" });
+    }
+  }
+
+  selectArticlesQuery += `
+    GROUP BY articles.article_id
+    ORDER BY articles.${sort_by} ${order};
+  `;
+
+  const { rows } = await db.query(selectArticlesQuery);
+
   return rows;
 };
 
