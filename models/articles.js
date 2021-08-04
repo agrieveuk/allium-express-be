@@ -9,6 +9,11 @@ exports.selectArticleById = async (article_id) => {
     GROUP BY articles.article_id;`,
     [article_id]
   );
+
+  if (!rows.length) {
+    return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
+  }
+
   return rows[0];
 };
 
@@ -57,11 +62,15 @@ exports.selectArticles = async ({
 exports.updateArticleVotes = async (inc_votes, article_id) => {
   const { rows } = await db.query(
     `UPDATE articles
-    SET votes = $1
+    SET votes = votes + $1
     WHERE article_id = $2
     RETURNING *;`,
     [inc_votes, article_id]
   );
+
+  if (!rows.length) {
+    return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
+  }
 
   return rows[0];
 };
