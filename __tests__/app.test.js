@@ -9,7 +9,7 @@ beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
 describe("/api", () => {
-  describe("/path-non-existent", () => {
+  describe("/api/path-non-existent", () => {
     it("404: returns a custom 'not found' error message", async () => {
       const { body } = await request(app)
         .get("/api/path-non-existent")
@@ -18,7 +18,7 @@ describe("/api", () => {
       expect(body.msg).toBe("Sorry, that is not found");
     });
   });
-  describe("/topics", () => {
+  describe("/api/topics", () => {
     describe("GET", () => {
       it("200: returns an object with an array of topic objects on a key of topics", async () => {
         const { body } = await request(app).get("/api/topics").expect(200);
@@ -33,7 +33,7 @@ describe("/api", () => {
       });
     });
   });
-  describe("/articles", () => {
+  describe("/api/articles", () => {
     describe("GET", () => {
       it("200: responds with an object containing an array of all article objects", async () => {
         const { body } = await request(app).get("/api/articles").expect(200);
@@ -107,105 +107,150 @@ describe("/api", () => {
         expect(body.msg).toBe("Bad Request");
       });
     });
-    describe("GET /:article", () => {
-      it("200: accepts an article ID and responds with that article in an object on a key of article", async () => {
-        const { body } = await request(app).get("/api/articles/5").expect(200);
+    describe("/api/articles/:article", () => {
+      describe("GET", () => {
+        it("200: accepts an article ID and responds with that article in an object on a key of article", async () => {
+          const { body } = await request(app)
+            .get("/api/articles/5")
+            .expect(200);
 
-        expect(body.article).toMatchObject({
-          title: "UNCOVERED: catspiracy to bring down democracy",
-          topic: "cats",
-          author: "rogersop",
-          body: "Bastet walks amongst us, and the cats are taking arms!",
-          created_at: "2020-08-03T13:14:00.000Z",
-          votes: 0,
-          comment_count: "2",
+          expect(body.article).toMatchObject({
+            title: "UNCOVERED: catspiracy to bring down democracy",
+            topic: "cats",
+            author: "rogersop",
+            body: "Bastet walks amongst us, and the cats are taking arms!",
+            created_at: "2020-08-03T13:14:00.000Z",
+            votes: 0,
+            comment_count: "2",
+          });
+        });
+        it("404: returns a custom 'not found' error message for valid but non-existent article_id", async () => {
+          const { body } = await request(app)
+            .get("/api/articles/750")
+            .expect(404);
+
+          expect(body.msg).toBe("Sorry, that is not found");
+        });
+        it("400: returns with 'Bad Request' for invalid article_id", async () => {
+          const { body } = await request(app)
+            .get("/api/articles/not_an_article_id")
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
         });
       });
-      it("404: returns a custom 'not found' error message for valid but non-existent article_id", async () => {
-        const { body } = await request(app)
-          .get("/api/articles/750")
-          .expect(404);
+      describe("PATCH", () => {
+        it("200: increments vote count in specified article by amount provided in request body where original votes are 0, and responds with the updated article", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({ inc_votes: 4 })
+            .expect(200);
 
-        expect(body.msg).toBe("Sorry, that is not found");
-      });
-      it("400: returns with 'Bad Request' for invalid article_id", async () => {
-        const { body } = await request(app)
-          .get("/api/articles/not_an_article_id")
-          .expect(400);
+          const { rows } = await db.query(
+            `SELECT votes FROM articles WHERE article_id = 3`
+          );
+          expect(rows[0].votes).toBe(4);
+          expect(body.article).toMatchObject({
+            title: "Eight pug gifs that remind me of mitch",
+            topic: "mitch",
+            author: "icellusedkars",
+            body: "some gifs",
+            votes: 4,
+          });
+        });
+        it("200: increments vote count where original votes were more than 0", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: 30 })
+            .expect(200);
 
-        expect(body.msg).toBe("Bad Request");
-      });
-    });
-    describe("PATCH /:article", () => {
-      it("200: increments vote count in specified article by amount provided in request body where original votes are 0, and responds with the updated article", async () => {
-        const { body } = await request(app)
-          .patch("/api/articles/3")
-          .send({ inc_votes: 4 })
-          .expect(200);
+          const { rows } = await db.query(
+            `SELECT votes FROM articles WHERE article_id = 1`
+          );
+          expect(rows[0].votes).toBe(130);
+          expect(body.article.votes).toBe(130);
+        });
+        it("200: does not increment vote count on any other article", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({ inc_votes: 45 })
+            .expect(200);
 
-        const { rows } = await db.query(
-          `SELECT votes FROM articles WHERE article_id = 3`
-        );
-        expect(rows[0].votes).toBe(4);
-        expect(body.article).toMatchObject({
-          title: "Eight pug gifs that remind me of mitch",
-          topic: "mitch",
-          author: "icellusedkars",
-          body: "some gifs",
-          votes: 4,
+          const { rows } = await db.query(
+            `SELECT votes FROM articles WHERE article_id = 2`
+          );
+          expect(rows[0].votes).toBe(0);
+        });
+        it("404: returns a custom 'not found' error message for valid but non-existent article_id", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/840")
+            .send({ inc_votes: 70 })
+            .expect(404);
+
+          expect(body.msg).toBe("Sorry, that is not found");
+        });
+        it("400: returns with 'Bad Request' for invalid article_id", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/string_NaN")
+            .send({ inc_votes: 70 })
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
+        });
+        it("400: returns with 'Bad Request' when sending anything other than number on the inc_votes key and does not update the article's votes", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({ inc_votes: "not a number" })
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
+
+          const { rows } = await db.query(
+            `SELECT votes FROM articles WHERE article_id = 3`
+          );
+          expect(rows[0].votes).toBe(0);
         });
       });
-      it("200: increments vote count where original votes were more than 0", async () => {
-        const { body } = await request(app)
-          .patch("/api/articles/1")
-          .send({ inc_votes: 30 })
-          .expect(200);
+      describe("/api/articles/:article/comments", () => {
+        describe("GET", () => {
+          it("200: respond with an array of comments for the given article_id", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/9/comments")
+              .expect(200);
 
-        const { rows } = await db.query(
-          `SELECT votes FROM articles WHERE article_id = 1`
-        );
-        expect(rows[0].votes).toBe(130);
-        expect(body.article.votes).toBe(130);
-      });
-      it("200: does not increment vote count on any other article", async () => {
-        const { body } = await request(app)
-          .patch("/api/articles/3")
-          .send({ inc_votes: 45 })
-          .expect(200);
+            expect(body.comments).toBeInstanceOf(Array);
+            body.comments.forEach((comment) => {
+              expect(comment.hasOwnProperty("article_id")).toBe(false);
+              expect(comment).toMatchObject({
+                comment_id: expect.any(Number),
+                votes: expect.any(Number),
+                author: expect.any(String),
+                body: expect.any(String),
+              });
+            });
+          });
+          it("200: respond with 200 if no comments on specified article", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/3/comments")
+              .expect(200);
 
-        const { rows } = await db.query(
-          `SELECT votes FROM articles WHERE article_id = 2`
-        );
-        expect(rows[0].votes).toBe(0);
-      });
-      it("404: returns a custom 'not found' error message for valid but non-existent article_id", async () => {
-        const { body } = await request(app)
-          .patch("/api/articles/840")
-          .send({ inc_votes: 70 })
-          .expect(404);
+            expect(body.comments).toEqual([]);
+          });
+          it("404: returns a custom 'not found' error message for valid but non-existent article_id", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/9000/comments")
+              .expect(404);
 
-        expect(body.msg).toBe("Sorry, that is not found");
-      });
-      it("400: returns with 'Bad Request' for invalid article_id", async () => {
-        const { body } = await request(app)
-          .patch("/api/articles/string_NaN")
-          .send({ inc_votes: 70 })
-          .expect(400);
+            expect(body.msg).toBe("Sorry, that is not found");
+          });
+          it("400: returns with 'Bad Request' for invalid article_id", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/string_NaN/comments")
+              .expect(400);
 
-        expect(body.msg).toBe("Bad Request");
-      });
-      it("400: returns with 'Bad Request' when sending anything other than number on the inc_votes key and does not update the article's votes", async () => {
-        const { body } = await request(app)
-          .patch("/api/articles/3")
-          .send({ inc_votes: "not a number" })
-          .expect(400);
-
-        expect(body.msg).toBe("Bad Request");
-
-        const { rows } = await db.query(
-          `SELECT votes FROM articles WHERE article_id = 3`
-        );
-        expect(rows[0].votes).toBe(0);
+            expect(body.msg).toBe("Bad Request");
+          });
+        });
       });
     });
   });
