@@ -37,7 +37,7 @@ exports.selectArticles = async ({
     LEFT JOIN comments
     ON articles.article_id = comments.article_id`;
 
-  if (!validColumns.includes(sort_by) || !["ASC", "DESC"].includes(order)) {
+  if (!validColumns.includes(sort_by)) {
     return Promise.reject({ status: 400, msg: "Bad Request" });
   }
 
