@@ -15,24 +15,23 @@ const seed = async (data) => {
     db.query(`DROP TABLE IF EXISTS users;`),
     db.query(`DROP TABLE IF EXISTS topics;`),
   ]);
-  // console.log("Dropped all tables");
 
   await Promise.all([
     db.query(`CREATE TABLE topics (
       slug VARCHAR(100) PRIMARY KEY,
-      description VARCHAR(300)
+      description VARCHAR(300) NOT NULL
     );`),
     db.query(`CREATE TABLE users (
       username VARCHAR(100) PRIMARY KEY,
       avatar_url VARCHAR(230),
-      name VARCHAR(100)
+      name VARCHAR(100) NOT NULL
     );`),
   ]);
 
   await db.query(`CREATE TABLE articles (
     article_id SERIAL PRIMARY KEY,
     title VARCHAR(150) NOT NULL,
-    body TEXT,
+    body TEXT NOT NULL,
     votes INT DEFAULT 0,
     topic VARCHAR(100) REFERENCES topics(slug) NOT NULL,
     author VARCHAR(100) REFERENCES users(username) NOT NULL,
@@ -47,7 +46,6 @@ const seed = async (data) => {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     body VARCHAR(500) NOT NULL
   );`);
-  // console.log("created tables!");
 
   const topicInsertQuery = format(
     `INSERT INTO topics
