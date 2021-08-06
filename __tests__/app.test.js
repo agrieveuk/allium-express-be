@@ -514,4 +514,26 @@ describe("/api", () => {
       });
     });
   });
+  describe("/api/users", () => {
+    describe("GET", () => {
+      it("200: responds with an array of objects all user's usernames", async () => {
+        const {
+          body: { users },
+        } = await request(app).get("/api/users").expect(200);
+
+        expect(users).toBeInstanceOf(Array);
+        expect(users.length).toBeGreaterThan(0);
+
+        users.forEach((user) => {
+          expect(user).toEqual({ username: expect.any(String) });
+          expect([
+            "butter_bridge",
+            "icellusedkars",
+            "rogersop",
+            "lurker",
+          ]).toContain(user.username);
+        });
+      });
+    });
+  });
 });
