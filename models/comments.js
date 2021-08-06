@@ -26,3 +26,20 @@ const checkArticleExists = async (article_id) => {
 
   return rows.length > 0;
 };
+
+exports.insertComment = async ({ username, body }, article_id) => {
+  if (typeof body !== "string") {
+    return Promise.reject({ status: 400, msg: "Bad Request" });
+  }
+
+  const { rows } = await db.query(
+    `INSERT INTO comments
+    (author, article_id, body)
+    VALUES
+    ($1, $2, $3)
+    RETURNING *;`,
+    [username, article_id, body]
+  );
+
+  return rows[0];
+};

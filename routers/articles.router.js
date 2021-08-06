@@ -4,7 +4,7 @@ const {
   getArticles,
   patchArticleVotes,
 } = require("../controllers/articles");
-const { getArticleComments } = require("../controllers/comments");
+const { getArticleComments, postComment } = require("../controllers/comments");
 const articlesRouter = express.Router();
 
 //endpoints
@@ -15,6 +15,9 @@ articlesRouter
   .get(getArticleById)
   .patch(patchArticleVotes);
 
-articlesRouter.route("/:article_id/comments").get(getArticleComments);
+articlesRouter
+  .route("/:article_id/comments")
+  .get(getArticleComments)
+  .post(postComment);
 
 module.exports = articlesRouter;
