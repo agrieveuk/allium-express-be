@@ -9,17 +9,15 @@ beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
 describe("/api", () => {
-  describe("/api", () => {
-    describe("GET", () => {
-      it("200: returns an object describing all available endpoints on my API", async () => {
-        const { body } = await request(app).get("/api").expect(200);
+  describe("GET", () => {
+    it("200: returns an object describing all available endpoints on my API", async () => {
+      const { body } = await request(app).get("/api").expect(200);
 
-        expect(body.endpoints).toBeInstanceOf(Object);
-        expect(body.endpoints).toMatchObject({
-          "GET /api": expect.any(Object),
-          "GET /api/topics": expect.any(Object),
-          "GET /api/articles": expect.any(Object),
-        });
+      expect(body.endpoints).toBeInstanceOf(Object);
+      expect(body.endpoints).toMatchObject({
+        "GET /api": expect.any(Object),
+        "GET /api/topics": expect.any(Object),
+        "GET /api/articles": expect.any(Object),
       });
     });
   });
@@ -38,6 +36,7 @@ describe("/api", () => {
         const { body } = await request(app).get("/api/topics").expect(200);
 
         expect(body.topics).toBeInstanceOf(Array);
+        expect(body.topics.length).toBeGreaterThan(0);
         body.topics.forEach((topic) => {
           expect(topic).toMatchObject({
             description: expect.any(String),
@@ -52,6 +51,7 @@ describe("/api", () => {
       it("200: responds with an object containing an array of all article objects", async () => {
         const { body } = await request(app).get("/api/articles").expect(200);
 
+        expect(body.articles.length).toBeGreaterThan(0);
         body.articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -95,6 +95,7 @@ describe("/api", () => {
           .get("/api/articles?topic=cats")
           .expect(200);
 
+        expect(body.articles.length).toBeGreaterThan(0);
         body.articles.forEach((article) => {
           expect(article.topic).toBe("cats");
         });
@@ -121,7 +122,7 @@ describe("/api", () => {
         expect(body.msg).toBe("Bad Request");
       });
     });
-    describe("/api/articles/:article", () => {
+    describe("/api/articles/:article_id", () => {
       describe("GET", () => {
         it("200: accepts an article ID and responds with that article in an object on a key of article", async () => {
           const { body } = await request(app)
@@ -274,7 +275,7 @@ describe("/api", () => {
           expect(body.msg).toBe("Bad Request");
         });
       });
-      describe("/api/articles/:article/comments", () => {
+      describe("/api/articles/:article_id/comments", () => {
         describe("GET", () => {
           it("200: respond with an array of comments for the given article_id", async () => {
             const { body } = await request(app)
@@ -282,6 +283,7 @@ describe("/api", () => {
               .expect(200);
 
             expect(body.comments).toBeInstanceOf(Array);
+            expect(body.comments.length).toBeGreaterThan(0);
             body.comments.forEach((comment) => {
               expect(comment.hasOwnProperty("article_id")).toBe(false);
               expect(comment).toMatchObject({
