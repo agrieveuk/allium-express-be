@@ -26,6 +26,12 @@ const patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
 
+  for (let key in req.body) {
+    if (key !== "inc_votes") {
+      return next({ status: 400, msg: "Bad Request" });
+    }
+  }
+
   updateArticleVotes(inc_votes, article_id)
     .then((article) => {
       res.status(200).send({ article });

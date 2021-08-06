@@ -210,6 +210,55 @@ describe("/api", () => {
           );
           expect(rows[0].votes).toBe(0);
         });
+        it("400: responds with 'Bad Request' when attempting to PATCH with null inc_votes", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({
+              inc_votes: null,
+            })
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
+        });
+        it("400: responds with 'Bad Request' when attempting to PATCH with NaN", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({
+              inc_votes: NaN,
+            })
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
+        });
+        it("400: responds with 'Bad Request' when trying to send a patch request with inc_votes missing", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({})
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
+        });
+        it("400: responds with 'Bad Request' if send extra keys in request", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({
+              inc_votes: 7,
+              spooky: "this should not be here",
+            })
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
+        });
+        it("400: responds with 'Bad Request' if send incorrect key in request", async () => {
+          const { body } = await request(app)
+            .patch("/api/articles/3")
+            .send({
+              increase_the_votes_by: 4,
+            })
+            .expect(400);
+
+          expect(body.msg).toBe("Bad Request");
+        });
       });
       describe("/api/articles/:article/comments", () => {
         describe("GET", () => {
