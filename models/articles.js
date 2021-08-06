@@ -45,7 +45,7 @@ exports.selectArticles = async ({
     if (["mitch", "cats", "paper"].includes(topic)) {
       selectArticlesQuery += ` WHERE topic = '${topic}'`;
     } else {
-      return Promise.reject({ status: 400, msg: "Bad Request" });
+      return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
     }
   }
 

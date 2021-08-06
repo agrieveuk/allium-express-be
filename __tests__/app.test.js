@@ -100,6 +100,14 @@ describe("/api", () => {
           expect(article.topic).toBe("cats");
         });
       });
+      it("200: responds with empty array when filter by valid topic with zero articles", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?topic=paper")
+          .expect(200);
+
+        expect(body.articles).toBeInstanceOf(Array);
+        expect(body.articles.length).toBe(0);
+      });
       it("400: responds with bad request when invalid column name is used in sort_by query", async () => {
         const { body } = await request(app)
           .get("/api/articles?sort_by=not_a_column")
@@ -114,12 +122,12 @@ describe("/api", () => {
 
         expect(body.msg).toBe("Bad Request");
       });
-      it("400: responds with bad request when an invalid topic is used in topic filter query", async () => {
+      it("404: responds with 'Sorry, that is not found' when an invalid topic is used in topic filter query", async () => {
         const { body } = await request(app)
           .get("/api/articles?topic=not_a_topic")
-          .expect(400);
+          .expect(404);
 
-        expect(body.msg).toBe("Bad Request");
+        expect(body.msg).toBe("Sorry, that is not found");
       });
     });
     describe("/api/articles/:article_id", () => {
