@@ -447,4 +447,32 @@ describe("/api", () => {
       });
     });
   });
+  describe("/api/comments/:comment_id", () => {
+    describe("DELETE", () => {
+      it("204: deletes the comment with specified comment_id", async () => {
+        const {
+          body: {
+            article: { comment_count: originalCommentCount },
+          },
+        } = await request(app).get("/api/articles/9");
+
+        const { body } = await request(app)
+          .delete("/api/comments/1")
+          .expect(204);
+
+        const {
+          body: { comments: commentsAfterDelete },
+        } = await request(app).get("/api/articles/9/comments");
+
+        expect(body).toEqual({});
+        expect(originalCommentCount - 1).toBe(
+          parseInt(commentsAfterDelete.length)
+        );
+        expect(commentsAfterDelete.length).toBeGreaterThan(0);
+        commentsAfterDelete.forEach((object) => {
+          expect(object.comment_id).not.toBe(1);
+        });
+      });
+    });
+  });
 });

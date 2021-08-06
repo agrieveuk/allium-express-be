@@ -1,4 +1,8 @@
-const { selectArticleComments, insertComment } = require("../models/comments");
+const {
+  selectArticleComments,
+  insertComment,
+  deleteFromComments,
+} = require("../models/comments");
 
 const getArticleComments = (req, res, next) => {
   const { article_id } = req.params;
@@ -26,4 +30,13 @@ const postComment = (req, res, next) => {
     .catch(next);
 };
 
-module.exports = { getArticleComments, postComment };
+const deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+  deleteFromComments(comment_id)
+    .then(() => {
+      res.status(204).send();
+    })
+    .catch(next);
+};
+
+module.exports = { getArticleComments, postComment, deleteComment };

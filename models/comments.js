@@ -43,3 +43,15 @@ exports.insertComment = async ({ username, body }, article_id) => {
 
   return rows[0];
 };
+
+exports.deleteFromComments = async (comment_id) => {
+  const { rowCount } = await db.query(
+    `DELETE FROM comments
+    WHERE comment_id = $1;`,
+    [comment_id]
+  );
+
+  if (rowCount) {
+    return;
+  }
+};
