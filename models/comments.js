@@ -51,7 +51,6 @@ exports.deleteFromComments = async (comment_id) => {
     [comment_id]
   );
 
-  if (rowCount) {
-    return;
-  }
+  if (rowCount) return;
+  else return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
 };

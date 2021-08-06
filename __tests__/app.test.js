@@ -498,6 +498,20 @@ describe("/api", () => {
           expect(object.comment_id).not.toBe(1);
         });
       });
+      it("404: responds with a 'Sorry, that is not found' if attempt to delete a valid comment_id which does not exist ", async () => {
+        const { body } = await request(app)
+          .delete("/api/comments/1000001")
+          .expect(404);
+
+        expect(body.msg).toBe("Sorry, that is not found");
+      });
+      it("400: responds with 'Bad Request' if attempt to delete an invalid comment_id", async () => {
+        const { body } = await request(app)
+          .delete("/api/comments/not_valid_id")
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
     });
   });
 });
