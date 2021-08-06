@@ -28,7 +28,7 @@ const checkArticleExists = async (article_id) => {
 };
 
 exports.insertComment = async ({ username, body }, article_id) => {
-  if (typeof body !== "string") {
+  if (typeof body !== "string" || typeof username !== "string") {
     return Promise.reject({ status: 400, msg: "Bad Request" });
   }
 

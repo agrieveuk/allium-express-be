@@ -17,12 +17,6 @@ const postComment = (req, res, next) => {
   const { username, body } = req.body;
   const { article_id } = req.params;
 
-  for (let key in req.body) {
-    if (!["username", "body"].includes(key)) {
-      return next({ status: 400, msg: "Bad Request" });
-    }
-  }
-
   insertComment({ username, body }, article_id)
     .then((comment) => {
       res.status(201).send({ comment });

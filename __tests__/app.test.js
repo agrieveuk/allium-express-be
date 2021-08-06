@@ -317,7 +317,7 @@ describe("/api", () => {
           });
         });
         describe("POST", () => {
-          it("200: successfully posts the provided comment to the specified article_id, and returns the posted comment", async () => {
+          it("201: successfully posts the provided comment to the specified article_id, and returns the posted comment", async () => {
             const { body } = await request(app)
               .post("/api/articles/9/comments")
               .send({
@@ -335,16 +335,16 @@ describe("/api", () => {
               created_at: expect.any(String),
             });
           });
-          it("400: responds with 'Bad Request' when attempting to post a comment to an article that does not exist", async () => {
+          it("404: responds with 'Sorry, that is not found' when attempting to post a comment to an article that does not exist", async () => {
             const { body } = await request(app)
               .post("/api/articles/9000/comments")
               .send({
                 username: "lurker",
                 body: "Is there anybody in here..?",
               })
-              .expect(400);
+              .expect(404);
 
-            expect(body.msg).toBe("Bad Request");
+            expect(body.msg).toBe("Sorry, that is not found");
           });
           it("400: responds with 'Bad Request' for invalid article_id", async () => {
             const { body } = await request(app)
@@ -357,16 +357,16 @@ describe("/api", () => {
 
             expect(body.msg).toBe("Bad Request");
           });
-          it("400: responds with 'Bad Request' when trying to post comment under a username which does not exist", async () => {
+          it("404: responds with 'Sorry, that is not found' when trying to post comment under a username which does not exist", async () => {
             const { body } = await request(app)
               .post("/api/articles/9/comments")
               .send({
                 username: "whoamI",
                 body: "I could be anyone!",
               })
-              .expect(400);
+              .expect(404);
 
-            expect(body.msg).toBe("Bad Request");
+            expect(body.msg).toBe("Sorry, that is not found");
           });
           it("400: responds with 'Bad Request' when trying to post comment under a username which is not the correct data type", async () => {
             const { body } = await request(app)
@@ -411,7 +411,7 @@ describe("/api", () => {
 
             expect(body.msg).toBe("Bad Request");
           });
-          it("400: responds with 'Bad Request' if send extra keys in request", async () => {
+          it("201: ignores unnecessary extra keys in request", async () => {
             const { body } = await request(app)
               .post("/api/articles/9/comments")
               .send({
@@ -419,9 +419,16 @@ describe("/api", () => {
                 body: "I'm new here",
                 spooky: "this should not be here",
               })
-              .expect(400);
+              .expect(201);
 
-            expect(body.msg).toBe("Bad Request");
+            expect(body.comment).toMatchObject({
+              article_id: 9,
+              author: "lurker",
+              body: "I'm new here",
+              comment_id: expect.any(Number),
+              created_at: expect.any(String),
+              votes: 0,
+            });
           });
           it("400: responds with 'Bad Request' if send incorrect keys in request", async () => {
             const { body } = await request(app)
