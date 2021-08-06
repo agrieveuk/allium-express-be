@@ -9,6 +9,20 @@ beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
 describe("/api", () => {
+  describe("/api", () => {
+    describe("GET", () => {
+      it("200: returns an object describing all available endpoints on my API", async () => {
+        const { body } = await request(app).get("/api").expect(200);
+
+        expect(body.endpoints).toBeInstanceOf(Object);
+        expect(body.endpoints).toMatchObject({
+          "GET /api": expect.any(Object),
+          "GET /api/topics": expect.any(Object),
+          "GET /api/articles": expect.any(Object),
+        });
+      });
+    });
+  });
   describe("/api/path-non-existent", () => {
     it("404: returns a custom 'not found' error message", async () => {
       const { body } = await request(app)
