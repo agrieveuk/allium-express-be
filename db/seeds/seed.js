@@ -35,17 +35,17 @@ const seed = async (data) => {
     body TEXT,
     votes INT DEFAULT 0,
     topic VARCHAR(100) REFERENCES topics(slug) NOT NULL,
-    author VARCHAR(100) REFERENCES users(username),
+    author VARCHAR(100) REFERENCES users(username) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );`);
 
   await db.query(`CREATE TABLE comments (
     comment_id SERIAL PRIMARY KEY,
-    author VARCHAR(100) REFERENCES users(username),
+    author VARCHAR(100) REFERENCES users(username) NOT NULL,
     article_id INT REFERENCES articles(article_id) NOT NULL,
     votes INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    body TEXT
+    body VARCHAR(500) NOT NULL
   );`);
   // console.log("created tables!");
 
