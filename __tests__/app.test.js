@@ -261,16 +261,24 @@ describe("/api", () => {
 
           expect(body.msg).toBe("Bad Request");
         });
-        it("400: responds with 'Bad Request' if send extra keys in request", async () => {
+        it("200: ignores unnecessary extra keys in request", async () => {
           const { body } = await request(app)
             .patch("/api/articles/3")
             .send({
-              inc_votes: 7,
+              inc_votes: 98,
               spooky: "this should not be here",
             })
-            .expect(400);
+            .expect(200);
 
-          expect(body.msg).toBe("Bad Request");
+          expect(body.article).toMatchObject({
+            article_id: 3,
+            author: "icellusedkars",
+            body: "some gifs",
+            created_at: expect.any(String),
+            title: "Eight pug gifs that remind me of mitch",
+            topic: "mitch",
+            votes: 98,
+          });
         });
         it("400: responds with 'Bad Request' if send incorrect key in request", async () => {
           const { body } = await request(app)
