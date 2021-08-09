@@ -10,11 +10,9 @@ exports.selectArticleById = async (article_id) => {
     [article_id]
   );
 
-  if (!rows.length) {
-    return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
-  }
-
-  return rows[0];
+  return (
+    rows[0] || Promise.reject({ status: 404, msg: "Sorry, that is not found" })
+  );
 };
 
 exports.selectArticles = async ({
@@ -72,9 +70,7 @@ exports.updateArticleVotes = async (inc_votes, article_id) => {
     [inc_votes, article_id]
   );
 
-  if (!rows.length) {
-    return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
-  }
-
-  return rows[0];
+  return (
+    rows[0] || Promise.reject({ status: 404, msg: "Sorry, that is not found" })
+  );
 };
