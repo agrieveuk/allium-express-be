@@ -40,7 +40,7 @@ describe("/api", () => {
         body.topics.forEach((topic) => {
           expect(topic).toMatchObject({
             description: expect.any(String),
-            slug: expect.any(String),
+            slug: expect.stringMatching(/^(mitch|cats|paper)$/),
           });
         });
       });
@@ -58,8 +58,10 @@ describe("/api", () => {
             title: expect.any(String),
             body: expect.any(String),
             votes: expect.any(Number),
-            topic: expect.any(String),
-            author: expect.any(String),
+            topic: expect.stringMatching(/^(mitch|cats|paper)$/),
+            author: expect.stringMatching(
+              /^(butter_bridge|icellusedkars|rogersop|lurker)$/
+            ),
             comment_count: expect.any(String),
           });
         });
@@ -305,7 +307,9 @@ describe("/api", () => {
               expect(comment).toMatchObject({
                 comment_id: expect.any(Number),
                 votes: expect.any(Number),
-                author: expect.any(String),
+                author: expect.stringMatching(
+                  /^(butter_bridge|icellusedkars|rogersop|lurker)$/
+                ),
                 body: expect.any(String),
               });
             });
@@ -525,13 +529,11 @@ describe("/api", () => {
         expect(users.length).toBeGreaterThan(0);
 
         users.forEach((user) => {
-          expect(user).toEqual({ username: expect.any(String) });
-          expect([
-            "butter_bridge",
-            "icellusedkars",
-            "rogersop",
-            "lurker",
-          ]).toContain(user.username);
+          expect(user).toEqual({
+            username: expect.stringMatching(
+              /^(butter_bridge|icellusedkars|rogersop|lurker)$/
+            ),
+          });
         });
       });
     });
