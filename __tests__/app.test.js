@@ -537,5 +537,28 @@ describe("/api", () => {
         });
       });
     });
+    describe("/api/users/:username", () => {
+      describe("GET", () => {
+        it("200: responds with the specified user object", async () => {
+          const { body } = await request(app)
+            .get("/api/users/rogersop")
+            .expect(200);
+
+          expect(body.user).toEqual({
+            username: "rogersop",
+            avatar_url:
+              "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
+            name: "paul",
+          });
+        });
+        it("404: responds with a custom 'not found' error message for username that doesn't exist", async () => {
+          const { body } = await request(app)
+            .get("/api/users/not_a_username")
+            .expect(404);
+
+          expect(body.msg).toBe("Sorry, that is not found");
+        });
+      });
+    });
   });
 });
