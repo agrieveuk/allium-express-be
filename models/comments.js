@@ -54,3 +54,17 @@ exports.deleteFromComments = async (comment_id) => {
   if (!rowCount)
     return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
 };
+
+exports.updateComment = async (inc_votes, comment_id) => {
+  const { rows } = await db.query(
+    `UPDATE comments
+    SET votes = votes + $1
+    WHERE comment_id = $2
+    RETURNING *;`,
+    [inc_votes, comment_id]
+  );
+
+  return (
+    rows[0] || Promise.reject({ status: 404, msg: "Sorry, that is not found" })
+  );
+};

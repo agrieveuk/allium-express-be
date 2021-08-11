@@ -517,6 +517,134 @@ describe("/api", () => {
         expect(body.msg).toBe("Bad Request");
       });
     });
+    describe("PATCH", () => {
+      it("200: increments vote count in specified comment by amount provided in request body where original votes are 0, and responds with the updated comment", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/11")
+          .send({ inc_votes: 12 })
+          .expect(200);
+
+        const { rows } = await db.query(
+          `SELECT votes FROM comments WHERE comment_id = 11`
+        );
+        expect(rows[0].votes).toBe(12);
+        expect(body.comment).toMatchObject({
+          comment_id: 11,
+          author: "icellusedkars",
+          body: "Ambidextrous marsupial",
+          created_at: expect.any(String),
+          votes: 12,
+        });
+      });
+      it("200: increments vote count where original votes were more than 0", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: 250 })
+          .expect(200);
+
+        const { rows } = await db.query(
+          `SELECT votes FROM comments WHERE comment_id = 1`
+        );
+        expect(rows[0].votes).toBe(266);
+        expect(body.comment.votes).toBe(266);
+      });
+      it("200: does not increment vote count on any other comment", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: 90 })
+          .expect(200);
+
+        const { rows } = await db.query(
+          `SELECT votes FROM comments WHERE comment_id = 17;`
+        );
+
+        expect(rows[0].votes).toBe(20);
+      });
+      it("200: ignores unnecessary extra keys in request", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/4")
+          .send({
+            inc_votes: -14,
+            spooky: "Why?",
+          })
+          .expect(200);
+
+        expect(body.comment).toMatchObject({
+          comment_id: 4,
+          author: "icellusedkars",
+          body: " I carry a log — yes. Is it funny to you? It is not to me.",
+          created_at: expect.any(String),
+          votes: -114,
+        });
+      });
+      it("404: returns a custom 'not found' error message for valid but non-existent comment_id", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/840")
+          .send({ inc_votes: 70 })
+          .expect(404);
+
+        expect(body.msg).toBe("Sorry, that is not found");
+      });
+      it("400: returns with 'Bad Request' for invalid comment_id", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/string_NaN")
+          .send({ inc_votes: 70 })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when anything other than a number is sent on the inc_votes key, and does not update the comment's votes", async () => {
+        let { body } = await request(app)
+          .patch("/api/comments/3")
+          .send({ inc_votes: [4] })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+
+        const { rows } = await db.query(
+          `SELECT votes FROM comments WHERE comment_id = 3`
+        );
+        expect(rows[0].votes).toBe(100);
+      });
+      it("400: responds with 'Bad Request' when attempting to PATCH with inc_votes as NaN", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/3")
+          .send({
+            inc_votes: NaN,
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to PATCH with inc_votes as null", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/3")
+          .send({
+            inc_votes: null,
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to PATCH with inc_votes missing", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/3")
+          .send({})
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' if incorrect key sent in request", async () => {
+        const { body } = await request(app)
+          .patch("/api/comments/3")
+          .send({
+            increase_the_votes_by: 4,
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+    });
   });
   describe("/api/users", () => {
     describe("GET", () => {

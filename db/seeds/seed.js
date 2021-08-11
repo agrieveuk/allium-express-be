@@ -32,18 +32,18 @@ const seed = async (data) => {
     article_id SERIAL PRIMARY KEY,
     title VARCHAR(150) NOT NULL,
     body TEXT NOT NULL,
-    votes INT DEFAULT 0,
+    votes INT DEFAULT 0 NOT NULL,
     topic VARCHAR(100) REFERENCES topics(slug) NOT NULL,
     author VARCHAR(100) REFERENCES users(username) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
   );`);
 
   await db.query(`CREATE TABLE comments (
     comment_id SERIAL PRIMARY KEY,
     author VARCHAR(100) REFERENCES users(username) NOT NULL,
     article_id INT REFERENCES articles(article_id) ON DELETE CASCADE NOT NULL,
-    votes INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    votes INT DEFAULT 0 NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     body VARCHAR(500) NOT NULL
   );`);
 
