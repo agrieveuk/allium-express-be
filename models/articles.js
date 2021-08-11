@@ -1,4 +1,6 @@
 const db = require("../db/connection.js");
+const format = require("pg-format");
+const { checkExists } = require("./helpers.js");
 
 exports.selectArticleById = async (article_id) => {
   const { rows } = await db.query(
@@ -40,17 +42,21 @@ exports.selectArticles = async ({
   }
 
   if (topic) {
-    if (["mitch", "cats", "paper"].includes(topic)) {
-      selectArticlesQuery += ` WHERE topic = '${topic}'`;
+    const topicExists = await checkExists(topic, "slug", "topics");
+
+    if (topicExists) {
+      selectArticlesQuery += format(` WHERE topic = %L`, topic);
     } else {
       return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
     }
   }
 
-  selectArticlesQuery += `
-    GROUP BY articles.article_id
-    ORDER BY articles.${sort_by} ${order};
-  `;
+  selectArticlesQuery += format(
+    ` GROUP BY articles.article_id
+    ORDER BY articles.%I %s;`,
+    sort_by,
+    order
+  );
 
   const { rows } = await db.query(selectArticlesQuery);
 
