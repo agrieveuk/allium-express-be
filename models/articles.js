@@ -58,10 +58,6 @@ exports.selectArticles = async ({
 };
 
 exports.updateArticleVotes = async (inc_votes, article_id) => {
-  if (!inc_votes) {
-    return Promise.reject({ status: 400, msg: "Bad Request" });
-  }
-
   const { rows } = await db.query(
     `UPDATE articles
     SET votes = votes + $1
