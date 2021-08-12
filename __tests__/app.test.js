@@ -47,7 +47,7 @@ describe("/api", () => {
     });
   });
   describe("/api/articles", () => {
-    describe("GET", () => {
+    describe.only("GET", () => {
       it("200: responds with an object containing an array of all article objects", async () => {
         const { body } = await request(app).get("/api/articles").expect(200);
 
@@ -202,6 +202,60 @@ describe("/api", () => {
           .expect(200);
 
         expect(paperBody.total_count).toBe("0");
+      });
+      it("400: responds with bad request when value passed in as limit is not a number", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?limit=not_a_num")
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with bad request when value passed in as limit is a negative number", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?limit=-4")
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with bad request when 0 is passed in as limit", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?limit=0")
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with bad request when value passed in as page is not a number", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?page=no_number_here")
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with bad request when value passed in as page is 0 or less", async () => {
+        const { body: pageMinusOne } = await request(app)
+          .get("/api/articles?page=-1")
+          .expect(400);
+
+        expect(pageMinusOne.msg).toBe("Bad Request");
+
+        const { body: pageZero } = await request(app)
+          .get("/api/articles?page=0")
+          .expect(400);
+
+        expect(pageZero.msg).toBe("Bad Request");
+      });
+      it("404: responds with 'Sorry, that is not found' when value passed in as page is larger than last page containing articles (dependant on limit value)", async () => {
+        const { body: limit10Result } = await request(app)
+          .get("/api/articles?page=3")
+          .expect(404);
+
+        expect(limit10Result.msg).toBe("Sorry, that is not found");
+
+        const { body: limit15Result } = await request(app)
+          .get("/api/articles?limit=15&page=2")
+          .expect(404);
+
+        expect(limit15Result.msg).toBe("Sorry, that is not found");
       });
     });
     describe("/api/articles/:article_id", () => {

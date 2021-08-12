@@ -43,7 +43,7 @@ exports.selectArticles = async ({
 
   let countQuery = `SELECT count(*) FROM articles`;
 
-  if (!validColumns.includes(sort_by)) {
+  if (!validColumns.includes(sort_by) || limit === "0") {
     return Promise.reject({ status: 400, msg: "Bad Request" });
   }
 
@@ -75,7 +75,11 @@ exports.selectArticles = async ({
 
   const total_count = countRows[0].count;
 
-  return [articles, total_count];
+  if (parseInt(total_count) && !articles.length) {
+    return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
+  } else {
+    return [articles, total_count];
+  }
 };
 
 exports.updateArticleVotes = async (inc_votes, article_id) => {

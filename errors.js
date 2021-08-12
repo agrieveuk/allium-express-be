@@ -3,7 +3,7 @@ exports.handle404s = (req, res, next) => {
 };
 
 exports.handlePSQLErrors = (err, req, res, next) => {
-  const errorCodes = ["22P02", "42601", "23502"];
+  const errorCodes = ["22P02", "42601", "23502", "2201W", "2201X"];
   if (err.code === "23503") {
     res.status(404).send({ msg: "Sorry, that is not found" });
   } else if (errorCodes.includes(err.code)) {
