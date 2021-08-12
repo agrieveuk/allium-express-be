@@ -21,6 +21,8 @@ exports.selectArticles = async ({
   sort_by = "created_at",
   order = "DESC",
   topic,
+  limit = 10,
+  page = 1,
 }) => {
   const validColumns = [
     "article_id",
@@ -32,10 +34,14 @@ exports.selectArticles = async ({
     "created_at",
   ];
 
+  const offset = limit * (page - 1);
+
   let selectArticlesQuery = `
     SELECT articles.*, count(comments) AS comment_count FROM articles
     LEFT JOIN comments
     ON articles.article_id = comments.article_id`;
+
+  let countQuery = `SELECT count(*) FROM articles`;
 
   if (!validColumns.includes(sort_by)) {
     return Promise.reject({ status: 400, msg: "Bad Request" });
@@ -46,6 +52,7 @@ exports.selectArticles = async ({
 
     if (topicExists) {
       selectArticlesQuery += format(` WHERE topic = %L`, topic);
+      countQuery += format(` WHERE topic = %L;`, topic);
     } else {
       return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
     }
@@ -53,14 +60,22 @@ exports.selectArticles = async ({
 
   selectArticlesQuery += format(
     ` GROUP BY articles.article_id
-    ORDER BY articles.%I %s;`,
+    ORDER BY articles.%I %s
+    LIMIT %L OFFSET %L;`,
     sort_by,
-    order
+    order,
+    limit,
+    offset
   );
 
-  const { rows } = await db.query(selectArticlesQuery);
+  const [{ rows: articles }, { rows: countRows }] = await Promise.all([
+    db.query(selectArticlesQuery),
+    db.query(countQuery),
+  ]);
 
-  return rows;
+  const total_count = countRows[0].count;
+
+  return [articles, total_count];
 };
 
 exports.updateArticleVotes = async (inc_votes, article_id) => {

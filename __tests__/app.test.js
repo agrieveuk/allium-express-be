@@ -131,6 +131,78 @@ describe("/api", () => {
 
         expect(body.msg).toBe("Sorry, that is not found");
       });
+      it("200: response default is to return with first 10 articles when no limit or page queries are passed in", async () => {
+        const { body } = await request(app).get("/api/articles").expect(200);
+
+        expect(body.articles).toHaveLength(10);
+        expect(body.articles[0].article_id).toBe(3);
+      });
+      it("200: response returns specified number of articles when limit query is passed in without a page query", async () => {
+        const { body: smallerPage } = await request(app)
+          .get("/api/articles?limit=6")
+          .expect(200);
+        const { body: largerPage } = await request(app)
+          .get("/api/articles?limit=11")
+          .expect(200);
+
+        expect(smallerPage.articles).toHaveLength(6);
+        expect(largerPage.articles).toHaveLength(11);
+      });
+      it("200: returns articles starting from correct multiple of limit when specified by an optional page query", async () => {
+        const { body: firstPage } = await request(app)
+          .get("/api/articles?page=1")
+          .expect(200);
+
+        const { body: secondPage } = await request(app)
+          .get("/api/articles?page=2")
+          .expect(200);
+
+        expect(firstPage.articles).toHaveLength(10);
+
+        expect(secondPage.articles).toHaveLength(2);
+        expect(secondPage.articles[0].article_id).toBe(11);
+        expect(secondPage.articles[1].article_id).toBe(7);
+      });
+      it("200: response returns correct number of articles when page query is passed in along with limit and other queries", async () => {
+        const { body: smallerPage } = await request(app)
+          .get("/api/articles?limit=3&page=3")
+          .expect(200);
+        const { body: largerPage } = await request(app)
+          .get("/api/articles?limit=11&page=2")
+          .expect(200);
+
+        expect(smallerPage.articles).toHaveLength(3);
+        expect(largerPage.articles).toHaveLength(1);
+
+        const { body: heavilyQueriedPage } = await request(app)
+          .get(
+            "/api/articles?limit=4&page=2&order=ASC&sort_by=article_id&topic=mitch"
+          )
+          .expect(200);
+
+        expect(heavilyQueriedPage.articles[0].article_id).toBe(6);
+        expect(heavilyQueriedPage.articles[1].article_id).toBe(7);
+        expect(heavilyQueriedPage.articles[2].article_id).toBe(8);
+        expect(heavilyQueriedPage.articles[3].article_id).toBe(9);
+      });
+      it("200: response object has a property total_count which is the total number of articles (ignoring limit)", async () => {
+        const { body } = await request(app).get("/api/articles").expect(200);
+
+        expect(body.total_count).toBe("12");
+      });
+      it("200: total_count property takes any filters into account", async () => {
+        const { body: catsBody } = await request(app)
+          .get("/api/articles?topic=cats")
+          .expect(200);
+
+        expect(catsBody.total_count).toBe("1");
+
+        const { body: paperBody } = await request(app)
+          .get("/api/articles?topic=paper")
+          .expect(200);
+
+        expect(paperBody.total_count).toBe("0");
+      });
     });
     describe("/api/articles/:article_id", () => {
       describe("GET", () => {
