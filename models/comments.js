@@ -1,12 +1,23 @@
 const db = require("../db/connection.js");
 const { checkExists } = require("./helpers.js");
+const format = require("pg-format");
 
-exports.selectArticleComments = async (article_id) => {
-  const { rows } = await db.query(
+exports.selectArticleComments = async (
+  { limit = 10, page = 1 },
+  article_id
+) => {
+  if (limit === "0") return Promise.reject({ status: 400, msg: "Bad Request" });
+
+  const offset = limit * (page - 1);
+  const commentsQuery = format(
     `SELECT comment_id, votes, created_at, author, body FROM comments
-    WHERE article_id = $1;`,
-    [article_id]
+    WHERE article_id = $1
+    LIMIT %L OFFSET %L;`,
+    limit,
+    offset
   );
+
+  const { rows } = await db.query(commentsQuery, [article_id]);
 
   if (!rows.length) {
     const articleExists = await checkExists(
@@ -15,7 +26,7 @@ exports.selectArticleComments = async (article_id) => {
       "articles"
     );
 
-    if (!articleExists) {
+    if (!articleExists || offset) {
       return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
     }
   }

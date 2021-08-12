@@ -47,7 +47,7 @@ describe("/api", () => {
     });
   });
   describe("/api/articles", () => {
-    describe.only("GET", () => {
+    describe("GET", () => {
       it("200: responds with an object containing an array of all article objects", async () => {
         const { body } = await request(app).get("/api/articles").expect(200);
 
@@ -460,6 +460,112 @@ describe("/api", () => {
               .expect(400);
 
             expect(body.msg).toBe("Bad Request");
+          });
+          it("200: response default is to return with first 10 comments when no limit or page queries are passed in", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/1/comments")
+              .expect(200);
+
+            expect(body.comments).toHaveLength(10);
+            expect(body.comments[0].comment_id).toBe(2);
+          });
+          it("200: response returns specified number of comments when limit query is passed in without a page query", async () => {
+            const { body: smallerPage } = await request(app)
+              .get("/api/articles/1/comments?limit=7")
+              .expect(200);
+            const { body: largerPage } = await request(app)
+              .get("/api/articles/1/comments?limit=13")
+              .expect(200);
+
+            expect(smallerPage.comments).toHaveLength(7);
+            expect(largerPage.comments).toHaveLength(13);
+          });
+          it("200: returns comments starting from correct multiple of limit when specified by an optional page query", async () => {
+            const { body: firstPage } = await request(app)
+              .get("/api/articles/1/comments?page=1")
+              .expect(200);
+
+            const { body: secondPage } = await request(app)
+              .get("/api/articles/1/comments?page=2")
+              .expect(200);
+
+            expect(firstPage.comments).toHaveLength(10);
+
+            expect(secondPage.comments).toHaveLength(3);
+            expect(secondPage.comments[0].comment_id).toBe(12);
+            expect(secondPage.comments[1].comment_id).toBe(13);
+            expect(secondPage.comments[2].comment_id).toBe(18);
+          });
+          it("200: response returns correct number of comments when page query is passed in along with limit", async () => {
+            const { body: smallerPage } = await request(app)
+              .get("/api/articles/1/comments?limit=4&page=3")
+              .expect(200);
+            const { body: largerPage } = await request(app)
+              .get("/api/articles/1/comments?limit=11&page=2")
+              .expect(200);
+
+            expect(smallerPage.comments).toHaveLength(4);
+            expect(largerPage.comments).toHaveLength(2);
+          });
+          it("400: responds with bad request when value passed in as limit is not a number", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/3/comments?limit=not_a_num")
+              .expect(400);
+
+            expect(body.msg).toBe("Bad Request");
+          });
+          it("400: responds with bad request when value passed in as limit is a negative number", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/2/comments?limit=-4")
+              .expect(400);
+
+            expect(body.msg).toBe("Bad Request");
+          });
+          it("400: responds with bad request when 0 is passed in as limit", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/2/comments?limit=0")
+              .expect(400);
+
+            expect(body.msg).toBe("Bad Request");
+          });
+          it("400: responds with bad request when value passed in as page is not a number", async () => {
+            const { body } = await request(app)
+              .get("/api/articles/2/comments?page=no_number_here")
+              .expect(400);
+
+            expect(body.msg).toBe("Bad Request");
+          });
+          it("400: responds with bad request when value passed in as page is 0 or less", async () => {
+            const { body: pageMinusOne } = await request(app)
+              .get("/api/articles/2/comments?page=-1")
+              .expect(400);
+
+            expect(pageMinusOne.msg).toBe("Bad Request");
+
+            const { body: pageZero } = await request(app)
+              .get("/api/articles/3/comments?page=0")
+              .expect(400);
+
+            expect(pageZero.msg).toBe("Bad Request");
+          });
+          it("404: responds with 'Sorry, that is not found' when value passed in as page is larger than last page containing articles (dependant on limit value)", async () => {
+            const { body: limit10Result } = await request(app)
+              .get("/api/articles/8/comments?page=2")
+              .expect(404);
+
+            expect(limit10Result.msg).toBe("Sorry, that is not found");
+
+            const { body: limit15Result } = await request(app)
+              .get("/api/articles/1/comments?limit=15&page=2")
+              .expect(404);
+
+            expect(limit15Result.msg).toBe("Sorry, that is not found");
+
+            const { body: limit6Result } = await request(app)
+              .get("/api/articles/1/comments?limit=6&page=4")
+              .expect(404);
+
+            expect(limit6Result.msg).toBe("Sorry, that is not found");
           });
         });
         describe("POST", () => {
