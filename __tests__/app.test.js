@@ -612,6 +612,19 @@ describe("/api", () => {
 
         expect(body.msg).toBe("Bad Request");
       });
+      it("400: responds with 'Bad Request' when attempting to post with too many characters in title", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "test".repeat(155),
+            body: "I sure do love a good test",
+            topic: "cats",
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
     });
     describe("/api/articles/:article_id", () => {
       describe("GET", () => {
@@ -1054,6 +1067,17 @@ describe("/api", () => {
               .send({
                 username: "lurker",
                 body: false,
+              })
+              .expect(400);
+
+            expect(body.msg).toBe("Bad Request");
+          });
+          it("400: responds with 'Bad Request' when attempting to post with too many characters in comment body", async () => {
+            const { body } = await request(app)
+              .post("/api/articles/9/comments")
+              .send({
+                username: "lurker",
+                body: ".".repeat(501),
               })
               .expect(400);
 
