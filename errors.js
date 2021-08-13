@@ -3,9 +3,11 @@ exports.handle404s = (req, res, next) => {
 };
 
 exports.handlePSQLErrors = (err, req, res, next) => {
-  const errorCodes = ["22P02", "42601", "23502", "2201W", "2201X"];
+  const errorCodes = ["22P02", "42601", "23502", "2201W", "2201X", "22001"];
   if (err.code === "23503") {
     res.status(404).send({ msg: "Sorry, that is not found" });
+  } else if (err.code === "23505") {
+    res.status(409).send({ msg: "Sorry, that already exists" });
   } else if (errorCodes.includes(err.code)) {
     res.status(400).send({ msg: "Bad Request" });
   } else {

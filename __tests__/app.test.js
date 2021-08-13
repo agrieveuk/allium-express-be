@@ -45,6 +45,140 @@ describe("/api", () => {
         });
       });
     });
+    describe("POST", () => {
+      it("201: takes a slug and description, inserts into the topics table and returns the new topic", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "tech",
+            description: "all things technological!",
+          })
+          .expect(201);
+
+        expect(body.topic).toEqual({
+          slug: "tech",
+          description: "all things technological!",
+        });
+      });
+      it("201: ignores unecessary extra keys", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "tech",
+            description: "all things technological!",
+            extras: "ignore this please",
+          })
+          .expect(201);
+
+        expect(body.topic).toEqual({
+          slug: "tech",
+          description: "all things technological!",
+        });
+      });
+      it("409: returns 'Sorry, that already exists' if attempting to post a topic which already exists and does not change the existing topic", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "paper",
+            description: "flat trees",
+          })
+          .expect(409);
+
+        expect(body.msg).toBe("Sorry, that already exists");
+
+        const { rows } = await db.query(
+          `SELECT * FROM topics WHERE slug = 'paper';`
+        );
+        expect(rows[0]).toEqual({
+          slug: "paper",
+          description: "what books are made of",
+        });
+      });
+      it("400: responds with 'Bad Request' when attempting to post with any key missing", async () => {
+        const { body: missingSlug } = await request(app)
+          .post("/api/topics")
+          .send({
+            description: "a way to remember you've forgotten something",
+          })
+          .expect(400);
+
+        expect(missingSlug.msg).toBe("Bad Request");
+
+        const { body: missingDescription } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "remembrall",
+          })
+          .expect(400);
+
+        expect(missingDescription.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with any key value missing", async () => {
+        const { body: missingSlug } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "dark energy",
+            desciption: null,
+          })
+          .expect(400);
+
+        expect(missingSlug.msg).toBe("Bad Request");
+
+        const { body: missingDescription } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: null,
+            description: "Absolute zero",
+          })
+          .expect(400);
+
+        expect(missingDescription.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with the wrong data type in slug", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: 859026244647,
+            description: "my favourite number",
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with the wrong data type in description", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "arrays",
+            description: ["they just keep things so orderly"],
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with too many characters in slug", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "o".repeat(101),
+            description: "things that make you go 'ooo'",
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with too many characters in slug", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({
+            slug: "stress",
+            description: "a".repeat(301),
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+    });
   });
   describe("/api/articles", () => {
     describe("GET", () => {
