@@ -2,6 +2,7 @@ const {
   selectArticleById,
   selectArticles,
   updateArticleVotes,
+  insertArticle,
 } = require("../models/articles");
 
 const getArticleById = (req, res, next) => {
@@ -33,4 +34,22 @@ const patchArticleVotes = (req, res, next) => {
     .catch(next);
 };
 
-module.exports = { getArticleById, getArticles, patchArticleVotes };
+const postArticle = (req, res, next) => {
+  const { author, title, body, topic } = req.body;
+
+  insertArticle({ author, title, body, topic })
+    .then((article_id) => {
+      return selectArticleById(article_id);
+    })
+    .then((article) => {
+      res.status(201).send({ article });
+    })
+    .catch(next);
+};
+
+module.exports = {
+  getArticleById,
+  getArticles,
+  patchArticleVotes,
+  postArticle,
+};

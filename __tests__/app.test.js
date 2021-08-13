@@ -258,6 +258,227 @@ describe("/api", () => {
         expect(limit15Result.msg).toBe("Sorry, that is not found");
       });
     });
+    describe("POST", () => {
+      it("201: takes an object with an author, title, body and topic, inserts into article table and returns the new article", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop",
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: "cats",
+          })
+          .expect(201);
+
+        expect(body.article).toEqual({
+          author: "rogersop",
+          title: "This is a test article",
+          body: "We live in a society",
+          topic: "cats",
+          article_id: 13,
+          votes: 0,
+          created_at: expect.any(String),
+          comment_count: "0",
+        });
+      });
+      it("201: ignores unecessary extra keys in request", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop",
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: "cats",
+            spooky: "Courage The Cowardly Dog",
+          })
+          .expect(201);
+
+        expect(body.article).toEqual({
+          author: "rogersop",
+          title: "This is a test article",
+          body: "We live in a society",
+          topic: "cats",
+          article_id: 13,
+          votes: 0,
+          created_at: expect.any(String),
+          comment_count: "0",
+        });
+      });
+      it("404: responds with 'Sorry, that is not found' when attempting to post with an author which does not exist in the users table", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "whoami?",
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: "cats",
+            spooky: "Courage The Cowardly Dog",
+          })
+          .expect(404);
+
+        expect(body.msg).toBe("Sorry, that is not found");
+      });
+      it("404: responds with 'Sorry, that is not found' when attempting to post with a topic which does not exist in the topics table", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: "books",
+            spooky: "Courage The Cowardly Dog",
+          })
+          .expect(404);
+
+        expect(body.msg).toBe("Sorry, that is not found");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with any key missing", async () => {
+        const { body: missingAuthor } = await request(app)
+          .post("/api/articles")
+          .send({
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(missingAuthor.msg).toBe("Bad Request");
+
+        const { body: missingTitle } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            body: "We live in a society",
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(missingTitle.msg).toBe("Bad Request");
+
+        const { body: missingBody } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "This is a test article",
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(missingBody.msg).toBe("Bad Request");
+
+        const { body: missingTopic } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "This is a test article",
+            body: "We live in a society",
+          })
+          .expect(400);
+
+        expect(missingTopic.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with any key value missing", async () => {
+        const { body: missingAuthor } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: null,
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(missingAuthor.msg).toBe("Bad Request");
+
+        const { body: missingTitle } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: null,
+            body: "We live in a society",
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(missingTitle.msg).toBe("Bad Request");
+
+        const { body: missingBody } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "This is a test article",
+            body: null,
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(missingBody.msg).toBe("Bad Request");
+
+        const { body: missingTopic } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: null,
+          })
+          .expect(400);
+
+        expect(missingTopic.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with the wrong data type in author", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: false,
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with the wrong data type in title", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: 342,
+            body: "We live in a society",
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with the wrong data type in body", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "This is a test article",
+            body: false,
+            topic: "books",
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+      it("400: responds with 'Bad Request' when attempting to post with the wrong data type in topic", async () => {
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send({
+            author: "rogersop?",
+            title: "This is a test article",
+            body: "We live in a society",
+            topic: ["cats"],
+          })
+          .expect(400);
+
+        expect(body.msg).toBe("Bad Request");
+      });
+    });
     describe("/api/articles/:article_id", () => {
       describe("GET", () => {
         it("200: accepts an article ID and responds with that article in an object on a key of article", async () => {

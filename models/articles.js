@@ -95,3 +95,26 @@ exports.updateArticleVotes = async (inc_votes, article_id) => {
     rows[0] || Promise.reject({ status: 404, msg: "Sorry, that is not found" })
   );
 };
+
+exports.insertArticle = async ({ author, title, body, topic }) => {
+  const allKeysStrings = [author, title, body, topic].every((variable) => {
+    return typeof variable === "string";
+  });
+
+  if (!allKeysStrings) {
+    return Promise.reject({ status: 400, msg: "Bad Request" });
+  }
+
+  const {
+    rows: [{ article_id }],
+  } = await db.query(
+    `INSERT INTO articles
+    (author, title, body, topic)
+    VALUES
+    ($1, $2, $3, $4)
+    RETURNING article_id;`,
+    [author, title, body, topic]
+  );
+
+  return article_id;
+};

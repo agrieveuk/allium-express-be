@@ -3,12 +3,13 @@ const {
   getArticleById,
   getArticles,
   patchArticleVotes,
+  postArticle,
 } = require("../controllers/articles");
 const { getArticleComments, postComment } = require("../controllers/comments");
 const articlesRouter = express.Router();
 
 //endpoints
-articlesRouter.route("/").get(getArticles);
+articlesRouter.route("/").get(getArticles).post(postArticle);
 
 articlesRouter
   .route("/:article_id")
