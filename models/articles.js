@@ -32,6 +32,7 @@ exports.selectArticles = async ({
     "topic",
     "author",
     "created_at",
+    "comment_count",
   ];
 
   const offset = limit * (page - 1);
@@ -60,7 +61,7 @@ exports.selectArticles = async ({
 
   selectArticlesQuery += format(
     ` GROUP BY articles.article_id
-    ORDER BY articles.%I %s
+    ORDER BY %I %s
     LIMIT %L OFFSET %L;`,
     sort_by,
     order,
