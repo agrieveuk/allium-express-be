@@ -23,6 +23,7 @@ exports.selectArticles = async ({
   topic,
   limit = 10,
   page = 1,
+  author
 }) => {
   const validColumns = [
     "article_id",
@@ -48,14 +49,25 @@ exports.selectArticles = async ({
     return Promise.reject({ status: 400, msg: "Bad Request" });
   }
 
-  if (topic) {
-    const topicExists = await checkExists(topic, "slug", "topics");
+  if (topic || author) {
+    const topicExists = topic ? await checkExists(topic, "slug", "topics") : null;
+    const authorExists = author ? await checkExists(author, "username", "users") : null;
 
-    if (topicExists) {
-      selectArticlesQuery += format(` WHERE topic = %L`, topic);
-      countQuery += format(` WHERE topic = %L;`, topic);
-    } else {
+    if ((topic && !topicExists) || (author && !authorExists)) {
       return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
+    }
+    
+    if (topic) {
+      selectArticlesQuery += format(` WHERE topic = %L`, topic);
+      countQuery += format(` WHERE topic = %L`, topic);
+
+      if (author) {
+        selectArticlesQuery += format(` AND articles.author = %L`, author);
+        countQuery += format(` AND articles.author = %L`, author);
+      }
+    } else {
+      selectArticlesQuery += format(` WHERE articles.author = %L`, author);
+      countQuery += format(` WHERE articles.author = %L`, author);
     }
   }
 
@@ -71,12 +83,13 @@ exports.selectArticles = async ({
 
   const [{ rows: articles }, { rows: countRows }] = await Promise.all([
     db.query(selectArticlesQuery),
-    db.query(countQuery),
+    db.query(countQuery += `;`),
   ]);
 
   const total_count = countRows[0].count;
 
   if (parseInt(total_count) && !articles.length) {
+    // Gone a page too far - no articles found on current page
     return Promise.reject({ status: 404, msg: "Sorry, that is not found" });
   } else {
     return [articles, total_count];

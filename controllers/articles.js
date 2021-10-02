@@ -15,8 +15,8 @@ const getArticleById = (req, res, next) => {
 };
 
 const getArticles = (req, res, next) => {
-  const { sort_by, order, topic, limit, page } = req.query;
-  selectArticles({ sort_by, order, topic, limit, page })
+  const { sort_by, order, topic, limit, page, author } = req.query;
+  selectArticles({ sort_by, order, topic, limit, page, author })
     .then(([articles, total_count]) => {
       res.status(200).send({ articles, total_count });
     })

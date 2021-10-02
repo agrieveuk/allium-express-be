@@ -244,6 +244,40 @@ describe("/api", () => {
         expect(body.articles).toBeInstanceOf(Array);
         expect(body.articles.length).toBe(0);
       });
+      it("200: can optionally filter by author with valid author username passed in as a query", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?author=rogersop")
+          .expect(200);
+
+        expect(body.articles.length).toBe(3);
+        body.articles.forEach((article) => {
+          expect(article.author).toBe("rogersop");
+        });
+      });
+      it("200: responds with empty array when filter by valid author with zero articles", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?author=lurker")
+          .expect(200);
+
+        expect(body.articles).toBeInstanceOf(Array);
+        expect(body.articles.length).toBe(0);
+      });
+      it("200: responds with empty array when filter by valid author with zero articles in valid topic", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?author=rogersop&topic=paper")
+          .expect(200);
+
+        expect(body.articles).toBeInstanceOf(Array);
+        expect(body.articles.length).toBe(0);
+      });
+      it("200: can filter by valid author and valid topic", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?author=rogersop&topic=mitch")
+          .expect(200);
+
+        expect(body.articles).toBeInstanceOf(Array);
+        expect(body.articles.length).toBe(2);
+      });
       it("400: responds with bad request when invalid column name is used in sort_by query", async () => {
         const { body } = await request(app)
           .get("/api/articles?sort_by=not_a_column")
@@ -261,6 +295,20 @@ describe("/api", () => {
       it("404: responds with 'Sorry, that is not found' when an invalid topic is used in topic filter query", async () => {
         const { body } = await request(app)
           .get("/api/articles?topic=not_a_topic")
+          .expect(404);
+
+        expect(body.msg).toBe("Sorry, that is not found");
+      });
+      it("404: responds with 'Sorry, that is not found' when an invalid author username is used in author filter query", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?author=not_a_username")
+          .expect(404);
+
+        expect(body.msg).toBe("Sorry, that is not found");
+      });
+      it("404: responds with 'Sorry, that is not found' when an invalid author username query is passed in alongside valid topic query", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?topic=mitch&author=not_a_username")
           .expect(404);
 
         expect(body.msg).toBe("Sorry, that is not found");
