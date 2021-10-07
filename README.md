@@ -30,7 +30,7 @@ Postgres - v12.8
 - From there, run
 
 ```
-git clone https://github.com/agrieveuk/be-nc-news.git
+git clone https://github.com/agrieveuk/allium-express-be.git
 ```
 
 - login with your git credentials
