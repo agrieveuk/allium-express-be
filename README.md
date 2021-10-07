@@ -1,4 +1,4 @@
-# NC-Express News API
+# The Allium-Express News API
 
 ## Summary
 
@@ -6,11 +6,11 @@ This project is a RESTful API which will serve article, comment, user and topic 
 
 Please find a link to the hosted version of this API on Heroku [here](https://nc-express-news.herokuapp.com/api).
 
-Please also find links below for my front end to this application!
+Please also find links below for my front end to this application, The Allium!
 
 [Github repo](https://github.com/agrieveuk/allium-express)
 
-[Netlify webapp](https://theallium.netlify.app/)
+[The Allium webapp on Netlify](https://theallium.netlify.app/)
 
 ---
 
