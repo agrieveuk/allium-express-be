@@ -8,6 +8,15 @@ require("jest-sorted");
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
+describe("GET /", () => {
+  it("200: returns a welcome message on a key of msg", async () => {
+    const { body } = await request(app).get("/").expect(200);
+
+    expect(body.msg).toBe(
+      "Welcome to the Allium Express News API! Please go to /api to see a list of available endpoints and what response you can expect. Thank you!"
+    );
+  });
+});
 describe("/api", () => {
   describe("GET", () => {
     it("200: returns an object describing all available endpoints on my API", async () => {
