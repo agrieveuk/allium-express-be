@@ -7,6 +7,7 @@ const {
 } = require("./errors");
 const apiRouter = require("./routers/api.router");
 const cors = require("cors");
+const getWelcomeMessage = require("./controllers/welcome");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(cors());
 
 app.use(express.json());
 
+app.get("/", getWelcomeMessage);
 app.use("/api", apiRouter);
 
 app.use("*", handle404s);
