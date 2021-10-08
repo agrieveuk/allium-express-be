@@ -1,4 +1,7 @@
 {
+  "GET /": {
+    "description": "serves up a welcome message and redirection to /api"
+  },
   "GET /api": {
     "description": "serves up a json representation of all the available endpoints of the api"
   },
@@ -9,19 +12,88 @@
       "topics": [{ "slug": "football", "description": "Footie!" }]
     }
   },
+  "POST /api/topics": {
+    "description": "creates the requested topic in the database and serves the newly created topic",
+    "queries": [],
+    "exampleRequestBody": {
+      "slug": "tech",
+      "description": "all things technological!"
+    },
+    "exampleResponse": {
+      "topics": [{ "slug": "tech", "description": "all things technological!" }]
+    }
+  },
   "GET /api/articles": {
     "description": "serves an array of all topics",
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
         {
+          "article_id": "13",
           "title": "Seafood substitutions are increasing",
+          "body": "Text from the article..",
+          "votes": "10",
           "topic": "cooking",
           "author": "weegembump",
-          "body": "Text from the article..",
-          "created_at": 1527695953341
+          "created_at": "2020-08-03T13:14:00.000Z",
+          "comment_count": "4"
         }
       ]
+    }
+  },
+  "POST /api/articles": {
+    "description": "creates the requested article in the articles table and serves the newly created article",
+    "queries": [],
+    "exampleRequestBody": {
+      "title": "The Great Emu War",
+      "body": "The Emus won",
+      "topic": "cooking",
+      "author": "weegembump"
+    },
+    "exampleResponse": {
+      "article": {
+        "article_id": 70,
+        "title": "The Great Emu War",
+        "body": "The Emus won",
+        "votes": "0",
+        "topic": "cooking",
+        "author": "weegembump",
+        "created_at": "2020-08-03T13:14:00.000Z",
+        "comment_count": "0"
+      }
+    }
+  },
+  "GET /api/articles/:article_id": {
+    "description": "serves the requested article with article id matching the article_id parameter",
+    "queries": [],
+    "exampleResponse": {
+      "article_id": "13",
+      "title": "Seafood substitutions are increasing",
+      "body": "Text from the article..",
+      "votes": "10",
+      "topic": "cooking",
+      "author": "weegembump",
+      "created_at": "2020-08-03T13:14:00.000Z",
+      "comment_count": "4"
+    }
+  },
+  "PATCH /api/articles/:article_id": {
+    "description": "increments article votes by amount specified, and serves the updated article",
+    "queries": [],
+    "exampleRequestBody": {
+      "inc_votes": "1"
+    },
+    "exampleResponse": {
+      "article": {
+        "article_id": "13",
+        "title": "Seafood substitutions are increasing",
+        "body": "Text from the article..",
+        "votes": "11",
+        "topic": "cooking",
+        "author": "weegembump",
+        "created_at": "2020-08-03T13:14:00.000Z",
+        "comment_count": "4"
+      }
     }
   }
 }
