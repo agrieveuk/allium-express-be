@@ -95,5 +95,59 @@
         "comment_count": "4"
       }
     }
+  },
+  "GET /api/articles/:article_id/comments": {
+    "description": "Serves an array of all comments on the specified article",
+    "queries": ["limit", "page"],
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 18,
+          "votes": 6,
+          "created_at": "2020-08-15T17:11:00.000Z",
+          "author": "jessjelly",
+          "body": "Text of comment..."
+        }
+      ]
+    }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "Creates the requested comment in the comments table and serves the newly created comment",
+    "queries": [],
+    "exampleRequestBody": {
+      "username": "jessjelly",
+      "body": "First"
+    },
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 303,
+        "author": "jessjelly",
+        "article_id": 5,
+        "votes": 0,
+        "created_at": "2021-10-09T15:46:52.166Z",
+        "body": "First"
+      }
+    }
+  },
+  "PATCH /api/comments/:comment_id": {
+    "description": "increments comment votes by amount specified, and serves the updated comment",
+    "queries": [],
+    "exampleRequestBody": {
+      "inc_votes": -1
+    },
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 11,
+        "author": "icellusedkars",
+        "body": "Ambidextrous marsupial",
+        "created_at": "2020-08-15T17:11:00.000Z",
+        "votes": -5
+      }
+    }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes specified comment and serves no content",
+    "queries": [],
+    "exampleResponse": {}
   }
 }
