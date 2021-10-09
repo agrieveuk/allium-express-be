@@ -29,10 +29,10 @@
     "exampleResponse": {
       "articles": [
         {
-          "article_id": "13",
+          "article_id": 13,
           "title": "Seafood substitutions are increasing",
           "body": "Text from the article..",
-          "votes": "10",
+          "votes": 10,
           "topic": "cooking",
           "author": "weegembump",
           "created_at": "2020-08-03T13:14:00.000Z",
@@ -55,7 +55,7 @@
         "article_id": 70,
         "title": "The Great Emu War",
         "body": "The Emus won",
-        "votes": "0",
+        "votes": 0,
         "topic": "cooking",
         "author": "weegembump",
         "created_at": "2020-08-03T13:14:00.000Z",
@@ -67,10 +67,10 @@
     "description": "serves the requested article with article id matching the article_id parameter",
     "queries": [],
     "exampleResponse": {
-      "article_id": "13",
+      "article_id": 13,
       "title": "Seafood substitutions are increasing",
       "body": "Text from the article..",
-      "votes": "10",
+      "votes": 10,
       "topic": "cooking",
       "author": "weegembump",
       "created_at": "2020-08-03T13:14:00.000Z",
@@ -85,10 +85,10 @@
     },
     "exampleResponse": {
       "article": {
-        "article_id": "13",
+        "article_id": 13,
         "title": "Seafood substitutions are increasing",
         "body": "Text from the article..",
-        "votes": "11",
+        "votes": 11,
         "topic": "cooking",
         "author": "weegembump",
         "created_at": "2020-08-03T13:14:00.000Z",
