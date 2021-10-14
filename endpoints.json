@@ -149,5 +149,22 @@
     "description": "deletes specified comment and serves no content",
     "queries": [],
     "exampleResponse": {}
+  },
+  "GET /api/users": {
+    "description": "serves and array of objects with each users' username",
+    "queries": [],
+    "exampleResponse": [
+      { "username": "lurker" },
+      { "username": "happyamy2016" }
+    ]
+  },
+  "GET /api/users/:username": {
+    "description": "serves the specified user object",
+    "queries": [],
+    "exampleResponse": {
+      "username": "rogersop",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
+      "name": "paul"
+    }
   }
 }
